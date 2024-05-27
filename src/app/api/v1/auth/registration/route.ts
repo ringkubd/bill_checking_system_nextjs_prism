@@ -16,6 +16,7 @@ export async function POST(req: NextRequest, res: NextResponse){
                 password: hashPassword(formData.password)
             },
         })
+        // @ts-ignore
         await res.json(user)
     }catch(err){
         // @ts-ignore
