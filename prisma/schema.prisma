@@ -48,10 +48,12 @@ model Session {
   sessionToken String   @unique
   userId       Int
   expires      DateTime
-  User         User?    @relation(fields: [userId], references: [id])
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken  String   @unique
 
+  // user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId])
 }
 
@@ -76,4 +78,49 @@ model Authenticator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, credentialID])
+}
+
+model Tsp {
+  id         Int      @id @default(autoincrement())
+  short_name String
+  full_name  String
+  group      String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  Batch      Batch[]
+}
+
+model Course {
+  id              Int      @id @default(autoincrement())
+  course_code     String
+  course_name     String
+  course_duration Int
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  Batch Batch[]
+}
+
+model Batch {
+  id         Int       @id @default(autoincrement())
+  batch_id   String    @unique
+  round      Int
+  course_id  Int
+  tsp_id     Int
+  start_date DateTime
+  end_date   DateTime?
+  completed  Boolean   @default(false)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  tsp    Tsp    @relation(fields: [tsp_id], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+}
+
+model Round {
+  id         Int      @id @default(autoincrement())
+  round      Int
+  category   String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }

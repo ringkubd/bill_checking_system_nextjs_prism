@@ -1,9 +1,10 @@
-import NextAuth, {NextAuthOptions} from "next-auth";
+import NextAuth, {getServerSession, NextAuthOptions} from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import {PrismaAdapter} from "@auth/prisma-adapter";
 import prisma from "@/lib/prisma";
+import type {GetServerSidePropsContext, NextApiRequest, NextApiResponse} from "next";
 
-const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
     // Configure one or more authentication providers
     providers: [
         CredentialsProvider({
@@ -37,10 +38,47 @@ const authOptions: NextAuthOptions = {
         signOut: "/auth",
     },
     //@ts-ignore
+    callbacks: {
+        async signIn({ user, account, profile, email, credentials }) {
+            // Check if this sign in callback is being called in the credentials authentication flow. If so, use the next-auth adapter to create a session entry in the database (SignIn is called after authorize so we can safely assume the user is valid and already authenticated).
+            if (req.query.nextauth.includes('callback') && req.query.nextauth.includes('credentials') && req.method === 'POST') {
+                if (user) {
+                    const sessionToken: any // Implement a function to generate the session token (you can use randomUUID as an example)
+                    const sessionExpiry: any // Implement a function to calculate the session cookie expiry date
+
+                    await adapter.createSession({
+                        sessionToken: sessionToken,
+                        userId: user.id,
+                        expires: sessionExpiry
+                    })
+
+                    const cookies = new Cookies(req,res)
+
+                    cookies.set('next-auth.session-token', sessionToken, {
+                        expires: sessionExpiry
+                    })
+                }
+            }
+
+            return true;
+        }
+    },
     adapter: PrismaAdapter(prisma),
     secret: process.env.NEXT_PUBLIC_SECRET,
-    session: { strategy: "jwt" },
+    session: {
+        strategy: "jwt",
+        maxAge: 3000,
+    },
     debug: true
 }
 const nextAuthInstance = NextAuth(authOptions);
 export { nextAuthInstance as GET,  nextAuthInstance as POST};
+
+export function auth(
+    ...args:
+        | [GetServerSidePropsContext["req"], GetServerSidePropsContext["res"]]
+        | [NextApiRequest, NextApiResponse]
+        | []
+) {
+    return getServerSession(...args, authOptions)
+}
