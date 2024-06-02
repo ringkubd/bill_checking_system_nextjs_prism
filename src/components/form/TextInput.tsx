@@ -28,7 +28,7 @@ const TextInput: FC<ComponentProps<'input'> & TextInputProps> = ({
                        error,
                        name,
                        errorMessageClassName,
-                       onChange,
+                       onChange = (e: React.FocusEvent<HTMLInputElement>) => console.log(e),
                        type = "text",
                        onBlur,
                        ...props

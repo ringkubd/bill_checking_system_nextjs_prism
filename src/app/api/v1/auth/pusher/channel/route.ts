@@ -1,20 +1,23 @@
 import {NextResponse} from "next/server";
 import {PusherServer} from "@/pusher/server";
 import {NextApiRequest, NextApiResponse} from "next";
-import {auth, authOptions} from "@/app/api/auth/[...nextauth]/route";
+import {getServerSession} from "next-auth";
+import {authOptions} from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(req: NextApiRequest, res: NextApiResponse){
     // @ts-ignore
     const a = await req.formData();
-    var data = {
-        socket_id: ""
-    };
+    var data = {};
     a.forEach(function(value: any, key: string | number){
         // @ts-ignore
         data[key] = value;
     });
+    const session = await getServerSession(authOptions)
+    console.log(session)
     try {
+        // @ts-ignore
         const socketID = data.socket_id;
+        // @ts-ignore
 
         const user = {
             id: "some_id",
@@ -23,23 +26,18 @@ export async function POST(req: NextApiRequest, res: NextApiResponse){
             },
             watchlist: ['another_id_1', 'another_id_2']
         };
-        const session = await auth()
-        console.log( session, 456)
         // @ts-ignore
-        if (session){
+        // if (session){
+            // @ts-ignore
             const authResponse = PusherServer.authenticateUser(socketID, user)
             return NextResponse.json(authResponse)
-        }else{
-            throw Error("Not logged in");
-        }
+        // }else{
+        //     throw Error("Not logged in");
+        // }
     }catch(err){
         // @ts-ignore
-        console.log(err)
         // const formData = await req.formData();
-        return NextResponse.json({
-            status: 401,
-            message: 'Not authorized'
-        })
+        return NextResponse.json(err.message)
     }
 
 }

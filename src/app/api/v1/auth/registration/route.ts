@@ -1,10 +1,10 @@
-import type {NextRequest, NextResponse} from "next/server";
 import prisma from "@/lib/prisma";
 import {logger} from "@/lib/logger";
-import {omit} from "lodash";
 import {hashPassword} from "@/lib/helpers";
+import {NextApiRequest, NextApiResponse} from "next";
+import {NextResponse} from "next/server";
 
-export async function POST(req: NextRequest, res: NextResponse){
+export async function POST(req: NextApiRequest, res: NextApiResponse) {
     // @ts-ignore
     const formData = await req.json();
     logger.log(JSON.stringify(formData));
@@ -16,14 +16,12 @@ export async function POST(req: NextRequest, res: NextResponse){
                 password: hashPassword(formData.password)
             },
         })
-        // @ts-ignore
-        await res.json(user)
+        return NextResponse.json(user);
     }catch(err){
-        // @ts-ignore
-        console.log(err)
-        // @ts-ignore
-        return NextResponse.json(omit(err), {
+        return NextResponse.json({
             status: 400,
+            // @ts-ignore
+            message: err?.message
         });
     }
 

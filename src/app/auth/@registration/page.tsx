@@ -5,6 +5,7 @@ import * as Yup from "yup";
 import TextInput from "@/components/form/TextInput";
 import GreenButton from "@/components/button/green";
 import {useRouter} from "next/navigation";
+import {signIn} from "@/app/api/auth/[...nextauth]/route";
 
 interface Values {
     email: string;
@@ -26,11 +27,12 @@ const RegistrationPage = ({navButton}: TopItem) => {
                 headers: {
                     "Content-Type": "application/json"
                 }
-            })
-            console.log(res)
-            router.push('/dashboard')
+            }).then(r => r.json());
+            await signIn(res.data)
+            // router.push('/dashboard')
         }catch (error) {
             console.error(error);
+            console.log(error)
         }
     }
     const initialValues : Values = {

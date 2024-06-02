@@ -5,8 +5,8 @@ import TextInput from "@/components/form/TextInput";
 import GreenButton from "@/components/button/green";
 import React, {useEffect} from "react";
 import {useRouter} from "next/navigation";
-import {logger} from "@/lib/logger";
-import {signIn, useSession} from "next-auth/react";
+import {SignIn} from "@/lib/signIn";
+import {useSession} from "next-auth/react";
 
 interface Values {
     email: string;
@@ -19,36 +19,21 @@ interface TopItem {
 
 const Login = ({navButton}: TopItem) => {
     const router = useRouter();
-    const { data: session, status } = useSession();
+    const session = useSession();
 
     useEffect(() => {
-        if (status === "authenticated") {
-            // @ts-ignore
-            // @ts-ignore
-            router.push(`/dashboard`);
-        }
-    }, [session, status])
-
+        console.log(session)
+    }, [session]);
     const submit = async (values: Values, props: FormikHelpers<Values>) => {
         try {
-            const res = await signIn("credentials", {
-                ...values,
-                //@ts-ignore
-                callbackUrl: process.env.NEXT_PUBLIC_BASE_URL+"/dashboard",
-            })
-            logger.debug(`signing:onsubmit:res`, res);
-            if (status === "authenticated") {
-                // @ts-ignore
-                // @ts-ignore
-                router.push(`/dashboard`);
-            }
+            const res = await SignIn(values);
         }catch (error) {
-            logger.error(error);
+            console.log(error)
         }
     }
     const initialValues : Values = {
         email: 'ajr.jahid@gmail.com',
-        password: '123456788'
+        password: '123456789'
     }
 
     const validationSchema: Yup.ObjectSchema<Values> = Yup.object().shape({
@@ -93,6 +78,7 @@ const Login = ({navButton}: TopItem) => {
                                         value={values.password}
                                     />
                                     <GreenButton text={'Submit'}
+                                                 type={`submit`}
                                                  className={`!bg-white !text-[#008080]`}/>
                                 </form>
                             )

@@ -30,7 +30,12 @@ const client = new PusherClient(process.env.NEXT_PUBLIC_SOKETI_APP_KEY, {
         },
         paramsProvider: null,
         headersProvider: null,
-        customHandler: null,
+        customHandler: () => {
+
+        },
+    },
+    channelAuthorization: {
+        endpoint: "/api/v1/auth/pusher",
     },
     cluster: process.env.NEXT_PUBLIC_SOKETI_APP_ID,
     wssHost: process.env.NEXT_PUBLIC_SOKETI_HOST,
